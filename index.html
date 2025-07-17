@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Weppa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url('x.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #19D3FF;
+        }
+        .background-fallback {
+            background: #19D3FF;
+            background: linear-gradient(0deg, #19D3FF, #3214CC);
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .lang-btn {
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            border: 2px solid transparent;
+        }
+        .lang-btn:hover, .lang-btn.active {
+            opacity: 1;
+            border-color: #67e8f9;
+        }
+        #temp-toggle {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="text-white">
+
+    <button id="temp-toggle">🌡️ | C°</button>
+
+    <div id="app-container" class="flex flex-col items-center justify-center min-h-screen p-4">
+        <h1 class="text-6xl font-bold mb-4">Weppa</h1>
+
+        <div class="flex space-x-4 mb-8">
+            <button id="lang-pl" class="lang-btn p-1 rounded-md active"><img src="https://flagcdn.com/w40/pl.png" alt="Polish Flag" width="30"></button>
+            <button id="lang-en" class="lang-btn p-1 rounded-md"><img src="https://flagcdn.com/w40/gb.png" alt="British Flag" width="30"></button>
+        </div>
+
+        <div class="w-full max-w-md text-center">
+            <form id="weatherForm" class="space-y-4">
+                <input type="text" id="city" class="w-full p-4 rounded-lg bg-white/20 placeholder-white/70 text-white text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-300 transition" placeholder="Miasto / City" required>
+                <input type="text" id="country" class="w-full p-4 rounded-lg bg-white/20 placeholder-white/70 text-white text-center text-lg focus:outline-none focus:ring-2 focus:ring-cyan-300 transition" placeholder="Kraj / Country">
+                <button type="submit" id="checkWeatherBtn" class="w-full p-4 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white font-bold text-lg transition-colors">
+                    Sprawdź pogodę
+                </button>
+            </form>
+
+            <div id="weatherResult" class="mt-8 p-6 rounded-lg glassmorphism min-h-[150px] flex items-center justify-center hidden">
+                <p id="message">Wprowadź dane, aby zobaczyć pogodę.</p>
+            </div>
+        </div>
+        
+        <p id="disclaimer" class="mt-8 text-sm text-center" style="color: #817F83;"></p>
+
+    </div>
+
+    <script>
+        const weatherForm = document.getElementById('weatherForm');
+        const cityInput = document.getElementById('city');
+        const countryInput = document.getElementById('country');
+        const resultDiv = document.getElementById('weatherResult');
+        const messageP = document.getElementById('message');
+        const checkWeatherBtn = document.getElementById('checkWeatherBtn');
+        const pageTitle = document.getElementById('pageTitle');
+        const langButtons = document.querySelectorAll('.lang-btn');
+        const tempToggleButton = document.getElementById('temp-toggle');
+        const disclaimerP = document.getElementById('disclaimer');
+
+        let currentLanguage = 'pl';
+        let currentUnit = 'c';
+        let lastQuery = null;
+
+        const translations = {
+            pl: {
+                title: "Weppa",
+                check: "Sprawdź pogodę",
+                initial: "Wprowadź dane, aby zobaczyć pogodę.",
+                loading: "Ładowanie...",
+                error: "Błąd",
+                notFound: "Nie znaleziono miasta.",
+                wind: "Wiatr",
+                disclaimer: "Aplikacja Weppa może pokazywać błędne informacje.",
+                weather: { 0: "Czyste niebo", 1: "Głównie bezchmurnie", 2: "Częściowe zachmurzenie", 3: "Zachmurzenie całkowite", 45: "Mgła", 48: "Mgła osadzająca szadź", 51: "Lekka mżawka", 53: "Umiarkowana mżawka", 55: "Gęsta mżawka", 61: "Słabe opady deszczu", 63: "Umiarkowane opady deszczu", 65: "Intensywne opady deszczu", 71: "Słabe opady śniegu", 73: "Umiarkowane opady śniegu", 75: "Intensywne opady śniegu", 80: "Słabe przelotne opady", 81: "Umiarkowane przelotne opady", 82: "Gwałtowne przelotne opady", 95: "Burza", 96: "Burza z lekkim gradem", 99: "Burza z silnym gradem" }
+            },
+            en: {
+                title: "Weppa",
+                check: "Check weather",
+                initial: "Enter data to see the weather.",
+                loading: "Loading...",
+                error: "Error",
+                notFound: "City not found.",
+                wind: "Wind",
+                disclaimer: "Weppa app can show incorrect information.",
+                weather: { 0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast", 45: "Fog", 48: "Depositing rime fog", 51: "Light drizzle", 53: "Moderate drizzle", 55: "Dense drizzle", 61: "Slight rain", 63: "Moderate rain", 65: "Heavy rain", 71: "Slight snow fall", 73: "Moderate snow fall", 75: "Heavy snow fall", 80: "Slight rain showers", 81: "Moderate rain showers", 82: "Violent rain showers", 95: "Thunderstorm", 96: "Thunderstorm with slight hail", 99: "Thunderstorm with heavy hail" }
+            }
+        };
+
+        const weatherIcons = { 0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️", 45: "🌫️", 48: "🌫️", 51: "🌦️", 53: "🌦️", 55: "🌦️", 56: "🌨️", 57: "🌨️", 61: "🌧️", 63: "🌧️", 65: "🌧️", 66: "🌨️", 67: "🌨️", 71: "❄️", 73: "❄️", 75: "❄️", 77: "❄️", 80: "🌦️", 81: "🌦️", 82: "⛈️", 85: "🌨️", 86: "🌨️", 95: "⛈️", 96: "⛈️", 99: "⛈️" };
+
+        const capitalizeWords = (str) => {
+            return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        };
+
+        const updateUI = (lang) => {
+            document.documentElement.lang = lang;
+            pageTitle.textContent = translations[lang].title;
+            checkWeatherBtn.textContent = translations[lang].check;
+            disclaimerP.textContent = translations[lang].disclaimer;
+            if (resultDiv.classList.contains('hidden') || !lastQuery) {
+                messageP.textContent = translations[lang].initial;
+            } else {
+                fetchWeather(lastQuery.city, lastQuery.country, lang);
+            }
+            langButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.id === `lang-${lang}`) {
+                    btn.classList.add('active');
+                }
+            });
+        };
+        
+        langButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                currentLanguage = button.id.split('-')[1];
+                updateUI(currentLanguage);
+            });
+        });
+        
+        tempToggleButton.addEventListener('click', () => {
+            currentUnit = currentUnit === 'c' ? 'f' : 'c';
+            tempToggleButton.textContent = currentUnit === 'c' ? '🌡️ | C°' : '🌡️ | F°';
+            if (lastQuery) {
+                fetchWeather(lastQuery.city, lastQuery.country, currentLanguage);
+            }
+        });
+
+        const fetchWeather = async (city, country, lang) => {
+            lastQuery = { city, country };
+            resultDiv.classList.remove('hidden');
+            messageP.innerHTML = `<div class="text-center">${translations[lang].loading}</div>`;
+
+            try {
+                const geoApiUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=${lang}&format=json${country ? `&country=${encodeURIComponent(country)}` : ''}`;
+                const geoResponse = await fetch(geoApiUrl);
+                const geoData = await geoResponse.json();
+
+                if (!geoData.results || geoData.results.length === 0) {
+                    throw new Error(translations[lang].notFound);
+                }
+
+                const { latitude, longitude, country_code } = geoData.results[0];
+                
+                const langMapToIntl = { pl: 'pl', en: 'en' };
+                const intlLang = langMapToIntl[lang] || 'en';
+                const regionNames = new Intl.DisplayNames([intlLang], { type: 'region' });
+                const translatedCountryName = regionNames.of(country_code);
+
+                const weatherApiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+                const weatherResponse = await fetch(weatherApiUrl);
+                const weatherData = await weatherResponse.json();
+
+                const { temperature, windspeed, weathercode } = weatherData.current_weather;
+                const desc = translations[lang].weather[weathercode] || "Unknown weather";
+                const icon = weatherIcons[weathercode] || "❓";
+
+                let displayTemp = temperature;
+                let unitSymbol = '°C';
+                if (currentUnit === 'f') {
+                    displayTemp = (temperature * 9/5) + 32;
+                    unitSymbol = '°F';
+                }
+
+                const displayCityName = capitalizeWords(city);
+
+                messageP.innerHTML = `
+                    <div class="text-center">
+                        <h2 class="text-3xl font-bold">${displayCityName}, ${translatedCountryName}</h2>
+                        <div class="text-6xl my-4">${icon} ${displayTemp.toFixed(1)}${unitSymbol}</div>
+                        <p class="text-xl" style="color: #817F83;">${desc}</p>
+                        <p class="text-lg mt-2" style="color: #817F83;">${translations[lang].wind}: ${windspeed} km/h</p>
+                    </div>
+                `;
+
+            } catch (error) {
+                messageP.innerHTML = `<div class="text-center text-red-300">${translations[lang].error}: ${error.message}</div>`;
+                lastQuery = null;
+            }
+        };
+
+        weatherForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const city = cityInput.value.trim();
+            const country = countryInput.value.trim();
+            if (!city) return;
+            fetchWeather(city, country, currentLanguage);
+        });
+
+        document.body.style.backgroundImage = "url('x.png')";
+        const img = new Image();
+        img.src = 'x.png';
+        img.onerror = () => {
+            document.getElementById('app-container').classList.add('background-fallback');
+        };
+
+        updateUI(currentLanguage);
+    </script>
+</body>
+</html>
