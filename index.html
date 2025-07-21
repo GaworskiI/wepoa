@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">Weppa</title>
+    <title id="pageTitle">Wepoa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -54,11 +54,11 @@
     <button id="temp-toggle">🌡️ | C°</button>
 
     <div id="app-container" class="flex flex-col items-center justify-center min-h-screen p-4">
-        <h1 class="text-6xl font-bold mb-4">Weppa</h1>
+        <h1 class="text-6xl font-bold mb-4">Wepoa</h1>
 
         <div class="flex space-x-4 mb-8">
-            <button id="lang-pl" class="lang-btn p-1 rounded-md active"><img src="https://flagcdn.com/w40/pl.png" alt="Polish Flag" width="30"></button>
-            <button id="lang-en" class="lang-btn p-1 rounded-md"><img src="https://flagcdn.com/w40/gb.png" alt="British Flag" width="30"></button>
+            <button id="lang-pl" class="lang-btn p-1 rounded-md active"><img src="https://flagcdn.com/w40/pl.png" alt="PL" width="30"></button>
+            <button id="lang-en" class="lang-btn p-1 rounded-md"><img src="https://flagcdn.com/w40/gb.png" alt="EN" width="30"></button>
         </div>
 
         <div class="w-full max-w-md text-center">
@@ -97,25 +97,25 @@
 
         const translations = {
             pl: {
-                title: "Weppa",
+                title: "Wepoa",
                 check: "Sprawdź pogodę",
                 initial: "Wprowadź dane, aby zobaczyć pogodę.",
                 loading: "Ładowanie...",
                 error: "Błąd",
                 notFound: "Nie znaleziono miasta.",
                 wind: "Wiatr",
-                disclaimer: "Aplikacja Weppa może pokazywać błędne informacje.",
+                disclaimer: "Aplikacja Wepoa może pokazywać błędne informacje.",
                 weather: { 0: "Czyste niebo", 1: "Głównie bezchmurnie", 2: "Częściowe zachmurzenie", 3: "Zachmurzenie całkowite", 45: "Mgła", 48: "Mgła osadzająca szadź", 51: "Lekka mżawka", 53: "Umiarkowana mżawka", 55: "Gęsta mżawka", 61: "Słabe opady deszczu", 63: "Umiarkowane opady deszczu", 65: "Intensywne opady deszczu", 71: "Słabe opady śniegu", 73: "Umiarkowane opady śniegu", 75: "Intensywne opady śniegu", 80: "Słabe przelotne opady", 81: "Umiarkowane przelotne opady", 82: "Gwałtowne przelotne opady", 95: "Burza", 96: "Burza z lekkim gradem", 99: "Burza z silnym gradem" }
             },
             en: {
-                title: "Weppa",
+                title: "Wepoa",
                 check: "Check weather",
                 initial: "Enter data to see the weather.",
                 loading: "Loading...",
                 error: "Error",
                 notFound: "City not found.",
                 wind: "Wind",
-                disclaimer: "Weppa app can show incorrect information.",
+                disclaimer: "Wepoa app can show incorrect information.",
                 weather: { 0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast", 45: "Fog", 48: "Depositing rime fog", 51: "Light drizzle", 53: "Moderate drizzle", 55: "Dense drizzle", 61: "Slight rain", 63: "Moderate rain", 65: "Heavy rain", 71: "Slight snow fall", 73: "Moderate snow fall", 75: "Heavy snow fall", 80: "Slight rain showers", 81: "Moderate rain showers", 82: "Violent rain showers", 95: "Thunderstorm", 96: "Thunderstorm with slight hail", 99: "Thunderstorm with heavy hail" }
             }
         };
